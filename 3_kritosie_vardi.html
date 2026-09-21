@@ -28,6 +28,11 @@ h1{font-size:26px;color:#1F4E79}
 .pill{border:2px solid #C75000;background:#fff;color:#C75000;border-radius:999px;
       padding:5px 16px;font:inherit;font-size:14px;cursor:pointer}
 .pill.on{background:#C75000;color:#fff}
+.pill.th{border-color:#1F4E79;color:#1F4E79}
+.pill.th.on{background:#1F4E79;color:#fff}
+.pill.lock{border-color:#c5ccd6;color:#9aa4b2;background:#f4f6f9;cursor:not-allowed}
+.pill.done{border-color:#2e7d32;color:#2e7d32}
+.pill.done.on{background:#2e7d32;color:#fff}
 .sentence{font-size:27px;text-align:center;line-height:1.45;margin-top:10px;
           background:#f7f9fc;border:2px solid #dbe3ef;border-radius:14px;
           height:96px;display:flex;align-items:center;justify-content:center;padding:8px 20px}
@@ -89,7 +94,9 @@ footer .cred b{display:block;color:#1F4E79;font-size:14px}
   </header>
 
   <div class="rows">
-    <span class="lbl">Līmenis:</span>
+    <span class="lbl">Tēma:</span>
+    <div class="pills" id="themes"></div>
+    <span class="lbl" style="margin-left:6px">Līmenis:</span>
     <div class="pills" id="levels"></div>
     <span class="lbl" id="lvlInfo"></span>
     <button id="pauseBtn" class="pausebtn hidden">Pauze</button>
@@ -103,7 +110,10 @@ footer .cred b{display:block;color:#1F4E79;font-size:14px}
       <p id="overText">Augšā redzēsi teikumu ar tukšu vietu.<br>
         Pēc atskaites no augšas kritīs vārdi — uzklikšķini uz tā, kurš teikumā der!<br>
         Katra kļūda pieskaita <b>5 soda sekundes</b>.</p>
-      <button id="startBtn">Sākt spēli</button>
+      <div style="display:flex;gap:10px">
+        <button id="startBtn">Sākt spēli</button>
+        <button id="nextLvlBtn" class="hidden" style="background:#2e7d32">Nākamais līmenis &#8594;</button>
+      </div>
     </div>
   </div>
 
@@ -127,46 +137,19 @@ function fit(){
 window.addEventListener("resize", fit);
 
 const LEVELS = {
-"viegls":{ speed:0.079, countdown:3, info:"vārdi krīt lēni, īsi teikumi", tasks:[
-  {pre:"Rudenī no kokiem krīt dzeltenas", post:".", ok:"lapas", bad:["lapass","laapas"]},
-  {pre:"Ziemā bērni brauc ar", post:".", ok:"kamanām", bad:["kamaanām","kamanam"]},
-  {pre:"Pavasarī kokos dzied", post:".", ok:"putni", bad:["putnii","puutni"]},
-  {pre:"Vasarā mežā aug saldas", post:".", ok:"ogas", bad:["ogass","oogas"]},
-  {pre:"Lapsa mežā bija ļoti", post:".", ok:"gudra", bad:["gudraa","gudrra"]},
-  {pre:"Zaķis ātri skrēja pa", post:".", ok:"mežu", bad:["mezu","meežu"]},
-  {pre:"Pļavā zied baltas", post:".", ok:"puķes", bad:["pukes","puķess"]},
-  {pre:"Gailis sēdēja augstu", post:".", ok:"kokā", bad:["koka","kookā"]},
-  {pre:"Pagalmā snieg balts", post:".", ok:"sniegs", bad:["sniegss","snieegs"]},
-  {pre:"Saule pavasarī silda", post:".", ok:"zemi", bad:["zemii","zeemi"]}
-]},
-"vidējs":{ speed:0.119, countdown:3, info:"vārdi krīt ātrāk, garāki teikumi", tasks:[
-  {pre:"Rudenī bērni ņem grozus un dodas uz mežu lasīt", post:".", ok:"sēnes", bad:["seenes","sēness","senes"]},
-  {pre:"Ziemā pagalmā bērni veido lielu sniegavīru ar burkānu", post:".", ok:"degunā", bad:["deegunā","degunaa","dequnā"]},
-  {pre:"Pavasarī no jumta pil ūdens un pa ceļu tek neliels", post:".", ok:"strauts", bad:["strautss","straauts","straut"]},
-  {pre:"Vasarā mēs braucam pie ezera, jo ūdens ir silts un", post:".", ok:"tīrs", bad:["tīrss","tiirs","tirs"]},
-  {pre:"Vecmāmiņa no dārza āboliem izcep gardu un siltu", post:".", ok:"pīrāgu", bad:["piragu","pīraagu","pīrāguu"]},
-  {pre:"Mežā zem eglēm slēpjas brūnas un resnas", post:".", ok:"bekas", bad:["bekass","beekas","bekass."]},
-  {pre:"Pēc stundām visi bērni kopā dodas slidot uz ledus", post:".", ok:"laukumu", bad:["laukummu","lauukumu","laukum"]},
-  {pre:"Pavasarī gājputni atgriežas mājās no siltajām", post:".", ok:"zemēm", bad:["zeemēm","zemēmm","zemem"]},
-  {pre:"Vasaras vakarā pie ugunskura mēs cepam maizi un", post:".", ok:"desas", bad:["desass","deesas","desaas"]},
-  {pre:"Pasakā jaunākais dēls bija čakls, uzmanīgs un ļoti", post:".", ok:"gudrs", bad:["gudrss","guudrs","gudris"]}
-]},
-"grūts":{ speed:0.158, boosts:[0.238,0.340], countdown:2, info:"15 s → 10 s → 7 s par ātrām pareizām atbildēm", tasks:[
-  {pre:"Rudens rītā zem eglēm bērni atrada pirmās", post:".", ok:"sēnes", bad:["seenes","sēness","senes","sēēnes"]},
-  {pre:"Ziemā uz ielas zem zābakiem sniegs skaļi", post:".", ok:"čīkstēja", bad:["čikstēja","cīkstēja","čīkstēeja","čīkstējaa"]},
-  {pre:"Pavasarī upē ledus kusa un ūdens plūda ļoti", post:".", ok:"ātri", bad:["aatri","ātrii","atri","āātri"]},
-  {pre:"Vasarā taka veda caur priežu mežu līdz", post:".", ok:"ezeram", bad:["eezeram","ezeramm","ezeraam","ezaram"]},
-  {pre:"Pasakā jaunākais dēls visu darīja ļoti", post:".", ok:"rūpīgi", bad:["rūpiigi","ruupīgi","rupīgi","rūpīggi"]},
-  {pre:"Vecmāmiņa izslauca govi un atnesa siltu", post:".", ok:"pienu", bad:["pieenu","pienuu","pinu","piennu"]},
-  {pre:"Pēc garas pastaigas bērni mājās atgriezās", post:".", ok:"priecīgi", bad:["prieciigi","priecīggi","precīgi","priecīigi"]},
-  {pre:"Pavasarī mitrajā pļavā nolaidās lielas", post:".", ok:"dzērves", bad:["dzeerves","dzērvess","dzerves","dzērvees"]},
-  {pre:"Ziemas vakarā krāsnī sprakšķēja spoža", post:".", ok:"uguns", bad:["ugunss","ugunns","uguuns","ugunis"]},
-  {pre:"Vasaras naktī pļavā skaļi sisināja", post:".", ok:"sienāzis", bad:["sienaazis","sienāziss","sienazis","siienāzis"]}
-]}};
+"viegls":{ speed:0.079, countdown:3, info:"vārdi krīt lēni, īsi teikumi"},
+"vidējs":{ speed:0.119, countdown:3, info:"vārdi krīt ātrāk, garāki teikumi"},
+"grūts":{ speed:0.158, boosts:[0.238,0.340], countdown:2, info:"15 s → 10 s → 7 s par ātrām pareizām atbildēm"}};
+
+const TASKS = {"Rudens": {"viegls": [{"pre": "Ir atnācis", "post": ".", "ok": "rudens", "bad": ["ruudens", "rūdens"]}, {"pre": "Mežs ir kļuvis dzeltens un", "post": ".", "ok": "krāsains", "bad": ["krasains", "krrāsains"]}, {"pre": "No kokiem krīt", "post": ".", "ok": "lapas", "bad": ["laapas", "lāpas"]}, {"pre": "Bērni iet uz", "post": ".", "ok": "mežu", "bad": ["mezu", "meežu"]}, {"pre": "Viņi nes lielus", "post": ".", "ok": "grozus", "bad": ["grrozus", "grous"]}, {"pre": "Zem eglēm aug", "post": ".", "ok": "sēnes", "bad": ["senes", "sēēnes"]}, {"pre": "Vējš dzenā pa zemi dzeltenas", "post": ".", "ok": "lapas", "bad": ["laapas", "lāpas"]}, {"pre": "Debesis ir", "post": ".", "ok": "pelēkas", "bad": ["pelekas", "peelēkas"]}, {"pre": "Sāk līt smalks", "post": ".", "ok": "lietus", "bad": ["liietus", "līetus"]}, {"pre": "Bērni steidzas", "post": ".", "ok": "mājās", "bad": ["majas", "māājās"]}], "vidējs": [{"pre": "Rudenī dārzā ir daudz", "post": ".", "ok": "darba", "bad": ["daarba", "dārba", "daba"]}, {"pre": "Mēs ar tēti lasām", "post": ".", "ok": "ābolus", "bad": ["abolus", "ābbolus", "ābous"]}, {"pre": "Daži āboli guļ", "post": ".", "ok": "zālē", "bad": ["zale", "zāālē", "zāē"]}, {"pre": "Vecmāmiņa no tiem cep", "post": ".", "ok": "pīrāgu", "bad": ["piragu", "pīīrāgu", "pīrgu"]}, {"pre": "Māsa palīdz mazgāt", "post": ".", "ok": "ābolus", "bad": ["abolus", "ābbolus", "ābous"]}, {"pre": "Es nesu grozu uz", "post": ".", "ok": "pagrabu", "bad": ["paagrabu", "pāgrabu", "pagabu"]}, {"pre": "Tur stāv burkas ar", "post": ".", "ok": "ievārījumu", "bad": ["ievarijumu", "ieevārījumu", "iēvārījumu"]}, {"pre": "Pēc darba mēs dzeram", "post": ".", "ok": "tēju", "bad": ["teju", "tēēju", "tēu"]}, {"pre": "Istabā kļūst silti un", "post": ".", "ok": "mājīgi", "bad": ["majigi", "māājīgi", "mājgi"]}, {"pre": "Aiz loga pūš auksts", "post": ".", "ok": "vējš", "bad": ["vejs", "vēējš", "vēš"]}], "grūts": [{"pre": "Rudens atnāca", "post": ".", "ok": "klusi", "bad": ["kllusi", "klūsi", "klsi", "kulsi"]}, {"pre": "No rīta viss bija", "post": ".", "ok": "slapjš", "bad": ["slapjs", "sllapjš", "slāpjš", "slajš"]}, {"pre": "Zem eglēm slēpās", "post": ".", "ok": "sēnes", "bad": ["senes", "sēēnes", "sēes", "snēes"]}, {"pre": "Viņi devās uz", "post": ".", "ok": "mežu", "bad": ["mezu", "meežu", "mēžu", "meu"]}, {"pre": "Kokos kliedza", "post": ".", "ok": "vārnas", "bad": ["varnas", "vāārnas", "vāras", "vrānas"]}, {"pre": "Tās bija brūnas un", "post": ".", "ok": "resnas", "bad": ["reesnas", "rēsnas", "resas", "rsenas"]}, {"pre": "Sāka līt smalks", "post": ".", "ok": "lietus", "bad": ["liietus", "līetus", "lieus", "leitus"]}, {"pre": "Tur bija sausi un", "post": ".", "ok": "silti", "bad": ["siilti", "sīlti", "siti", "sliti"]}, {"pre": "Mežs smaržoja pēc", "post": ".", "ok": "sūnām", "bad": ["sunam", "sūūnām", "sūām", "snūām"]}, {"pre": "Tie gatavojās ceļam uz siltajām", "post": ".", "ok": "zemēm", "bad": ["zemem", "zeemēm", "zēmēm", "zeēm"]}]}, "Ziema": {"viegls": [{"pre": "Naktī uzsniga", "post": ".", "ok": "sniegs", "bad": ["snniegs", "snīegs"]}, {"pre": "Pagalms ir balts un", "post": ".", "ok": "tīrs", "bad": ["tirs", "tīīrs"]}, {"pre": "Bērni skrien", "post": ".", "ok": "ārā", "bad": ["ara", "ārrā"]}, {"pre": "Viņi brauc ar", "post": ".", "ok": "kamanām", "bad": ["kamanam", "kaamanām"]}, {"pre": "Kalniņā ir daudz", "post": ".", "ok": "bērnu", "bad": ["bernu", "bēērnu"]}, {"pre": "Rokās visiem ir silti", "post": ".", "ok": "cimdi", "bad": ["ciimdi", "cīmdi"]}, {"pre": "Deguns kļūst", "post": ".", "ok": "sarkans", "bad": ["saarkans", "sārkans"]}, {"pre": "Pēc tam visi iet", "post": ".", "ok": "mājās", "bad": ["majas", "māājās"]}, {"pre": "Mamma dod siltu", "post": ".", "ok": "tēju", "bad": ["teju", "tēēju"]}, {"pre": "Vakarā logos spīd", "post": ".", "ok": "lampiņas", "bad": ["lampinas", "laampiņas"]}], "vidējs": [{"pre": "Ziema ir atnākusi", "post": ".", "ok": "negaidīti", "bad": ["negaiditi", "neegaidīti", "nēgaidīti"]}, {"pre": "Naktī ir uzsnidzis biezs", "post": ".", "ok": "sniegs", "bad": ["snniegs", "snīegs", "snigs"]}, {"pre": "Bērni iet slidot uz", "post": ".", "ok": "ezeru", "bad": ["ezzeru", "ezēru", "ezru"]}, {"pre": "Ledus ir biezs un", "post": ".", "ok": "stiprs", "bad": ["sttiprs", "stīprs", "stirs"]}, {"pre": "Daži bērni krīt, bet", "post": ".", "ok": "smejas", "bad": ["smmejas", "smējas", "smeas"]}, {"pre": "Pēc tam visi iet", "post": ".", "ok": "mājās", "bad": ["majas", "māājās", "māās"]}, {"pre": "Vakarā logos spīd", "post": ".", "ok": "svecītes", "bad": ["svecites", "svvecītes", "svēcītes"]}, {"pre": "Mamma cep", "post": ".", "ok": "piparkūkas", "bad": ["piparkukas", "piiparkūkas", "pīparkūkas"]}, {"pre": "Tētis nes malku", "post": ".", "ok": "istabā", "bad": ["istaba", "isstabā", "istābā"]}, {"pre": "Krāsnī sprakšķ", "post": ".", "ok": "uguns", "bad": ["ugguns", "ugūns", "ugns"]}], "grūts": [{"pre": "Decembrī pilsētā atnāca", "post": ".", "ok": "ziema", "bad": ["ziiema", "zīema", "zima", "zeima"]}, {"pre": "No rīta viss", "post": ".", "ok": "mirdzēja", "bad": ["mirdzeja", "miirdzēja", "mīrdzēja", "mirdēja"]}, {"pre": "Sētnieks tīrīja", "post": ".", "ok": "ietvi", "bad": ["ieetvi", "iētvi", "ievi", "itevi"]}, {"pre": "Logos dega siltas", "post": ".", "ok": "lampiņas", "bad": ["lampinas", "laampiņas", "lāmpiņas", "lampņas"]}, {"pre": "Pēc stundām visi gāja", "post": ".", "ok": "pagalmā", "bad": ["pagalma", "paagalmā", "pāgalmā", "paglmā"]}, {"pre": "Degunā ielika lielu", "post": ".", "ok": "burkānu", "bad": ["burkanu", "buurkānu", "būrkānu", "burānu"]}, {"pre": "Slidotava bija pilna ar", "post": ".", "ok": "bērniem", "bad": ["berniem", "bēērniem", "bērnīem", "bēriem"]}, {"pre": "Skaļruņos skanēja", "post": ".", "ok": "mūzika", "bad": ["muzika", "mūūzika", "mūzīka", "mūzka"]}, {"pre": "Mamma tās cepa ar", "post": ".", "ok": "ievārījumu", "bad": ["ievarijumu", "ieevārījumu", "iēvārījumu", "ievārjumu"]}, {"pre": "Aiz loga sniga lielas", "post": ".", "ok": "pārslas", "bad": ["parslas", "pāārslas", "pārlas", "prāslas"]}]}, "Pavasaris": {"viegls": [{"pre": "Sniegs ir", "post": ".", "ok": "nokusis", "bad": ["nookusis", "nokūsis"]}, {"pre": "Spīd silta", "post": ".", "ok": "saule", "bad": ["saaule", "sāule"]}, {"pre": "Zeme kļūst melna un", "post": ".", "ok": "mīksta", "bad": ["miksta", "mīīksta"]}, {"pre": "Kokos dzied", "post": ".", "ok": "putni", "bad": ["puutni", "pūtni"]}, {"pre": "Tie vij mazas", "post": ".", "ok": "ligzdas", "bad": ["liigzdas", "līgzdas"]}, {"pre": "Zālē zied pirmās", "post": ".", "ok": "puķes", "bad": ["pukes", "puuķes"]}, {"pre": "Pa ceļu tek", "post": ".", "ok": "strauts", "bad": ["sttrauts", "strāuts"]}, {"pre": "Bērni laiž papīra", "post": ".", "ok": "laivas", "bad": ["laaivas", "lāivas"]}, {"pre": "Gaiss ir svaigs un", "post": ".", "ok": "silts", "bad": ["siilts", "sīlts"]}, {"pre": "Visi priecājas par", "post": ".", "ok": "pavasari", "bad": ["paavasari", "pāvasari"]}], "vidējs": [{"pre": "Pavasarī dārzā sākas", "post": ".", "ok": "darbs", "bad": ["daarbs", "dārbs", "dabs"]}, {"pre": "Mēs ar tēti sējam", "post": ".", "ok": "sēklas", "bad": ["seklas", "sēēklas", "sēkas"]}, {"pre": "Es raku mazas", "post": ".", "ok": "bedrītes", "bad": ["bedrites", "beedrītes", "bēdrītes"]}, {"pre": "Māsa lej ūdeni no", "post": ".", "ok": "lejkannas", "bad": ["leejkannas", "lējkannas", "lejknnas"]}, {"pre": "Pēc dažām nedēļām parādās", "post": ".", "ok": "asni", "bad": ["assni", "asi", "ansi"]}, {"pre": "Tie ir mazi un", "post": ".", "ok": "zaļi", "bad": ["zali", "zaaļi", "zāļi"]}, {"pre": "Dārzā atlido", "post": ".", "ok": "bites", "bad": ["biites", "bītes", "bies"]}, {"pre": "Ābelēs zied balti", "post": ".", "ok": "ziedi", "bad": ["ziiedi", "zīedi", "zidi"]}, {"pre": "Putni vij ligzdas jumta", "post": ".", "ok": "pažobelē", "bad": ["pazobele", "paažobelē", "pāžobelē"]}, {"pre": "Vakarā vēl ir", "post": ".", "ok": "gaiši", "bad": ["gaisi", "gaaiši", "gāiši"]}], "grūts": [{"pre": "Marta beigās sniegs sāka", "post": ".", "ok": "kust", "bad": ["kuust", "kūst", "kut", "ksut"]}, {"pre": "Ūdens plūda", "post": ".", "ok": "ātri", "bad": ["atri", "āttri", "āti", "ārti"]}, {"pre": "Ledus gabali sitās viens pret", "post": ".", "ok": "otru", "bad": ["ottru", "otu", "ortu", "otruu"]}, {"pre": "Pēc dažām dienām upe kļuva", "post": ".", "ok": "rāma", "bad": ["rama", "rāāma", "rāa", "rmāa"]}, {"pre": "Saule sildīja zemi arvien", "post": ".", "ok": "vairāk", "bad": ["vairak", "vaairāk", "vāirāk", "vaiāk"]}, {"pre": "Bērzi kļuva", "post": ".", "ok": "zaļgani", "bad": ["zalgani", "zaaļgani", "zāļgani", "zaļani"]}, {"pre": "Gājputni atgriezās", "post": ".", "ok": "mājās", "bad": ["majas", "māājās", "māās", "mjāās"]}, {"pre": "Mēs ar klasi gājām tās", "post": ".", "ok": "vērot", "bad": ["verot", "vēērot", "vēot", "vrēot"]}, {"pre": "Bērni rakstīja piezīmes", "post": ".", "ok": "kladēs", "bad": ["klades", "klladēs", "klādēs", "klaēs"]}, {"pre": "Klasē mēs zīmējām", "post": ".", "ok": "redzēto", "bad": ["redzeto", "reedzēto", "rēdzēto", "redēto"]}]}, "Vasara": {"viegls": [{"pre": "Vasarā ir garas", "post": ".", "ok": "dienas", "bad": ["diienas", "dīenas"]}, {"pre": "Mēs braucam pie", "post": ".", "ok": "ezera", "bad": ["ezzera", "ezēra"]}, {"pre": "Ūdens ir silts un", "post": ".", "ok": "tīrs", "bad": ["tirs", "tīīrs"]}, {"pre": "Es peldos kopā ar", "post": ".", "ok": "brāli", "bad": ["brali", "brrāli"]}, {"pre": "Krastā smiltis ir", "post": ".", "ok": "karstas", "bad": ["kaarstas", "kārstas"]}, {"pre": "Mežā aug saldas", "post": ".", "ok": "ogas", "bad": ["oggas", "ogs"]}, {"pre": "Mēs lasām zemenes un", "post": ".", "ok": "mellenes", "bad": ["meellenes", "mēllenes"]}, {"pre": "Pļavā lido", "post": ".", "ok": "tauriņi", "bad": ["taurini", "taauriņi"]}, {"pre": "Vakarā deg", "post": ".", "ok": "ugunskurs", "bad": ["uggunskurs", "ugūnskurs"]}, {"pre": "Debesīs parādās", "post": ".", "ok": "zvaigznes", "bad": ["zvvaigznes", "zvāigznes"]}], "vidējs": [{"pre": "Vasarā mēs dzīvojam", "post": ".", "ok": "laukos", "bad": ["laaukos", "lāukos", "lauos"]}, {"pre": "Rīti ir gaiši un", "post": ".", "ok": "silti", "bad": ["siilti", "sīlti", "siti"]}, {"pre": "Vecmāmiņa slauc", "post": ".", "ok": "govi", "bad": ["goovi", "goi", "gvoi"]}, {"pre": "Mums ir svaigs", "post": ".", "ok": "piens", "bad": ["piiens", "pīens", "pins"]}, {"pre": "Pēc brokastīm mēs ejam uz", "post": ".", "ok": "pļavu", "bad": ["plavu", "pļļavu", "pļāvu"]}, {"pre": "Tur lido raibi", "post": ".", "ok": "tauriņi", "bad": ["taurini", "taauriņi", "tāuriņi"]}, {"pre": "Mēs plūcam puķu", "post": ".", "ok": "pušķi", "bad": ["puski", "puušķi", "pūšķi"]}, {"pre": "Pēcpusdienā mēs peldamies", "post": ".", "ok": "ezerā", "bad": ["ezera", "ezzerā", "ezērā"]}, {"pre": "Vakarā mēs cepam", "post": ".", "ok": "desas", "bad": ["deesas", "dēsas", "deas"]}, {"pre": "Debesīs parādās pirmās", "post": ".", "ok": "zvaigznes", "bad": ["zvvaigznes", "zvāigznes", "zvaiznes"]}], "grūts": [{"pre": "Jūlijā mēs braucam uz", "post": ".", "ok": "laukiem", "bad": ["laaukiem", "lāukiem", "lauiem", "luakiem"]}, {"pre": "Māja stāv liela dārza", "post": ".", "ok": "vidū", "bad": ["vidu", "viidū", "vīdū", "viū"]}, {"pre": "Mums ir svaigs un silts", "post": ".", "ok": "piens", "bad": ["piiens", "pīens", "pins", "peins"]}, {"pre": "Pēc brokastīm mēs ejam", "post": ".", "ok": "dārzā", "bad": ["darza", "dāārzā", "dāzā", "drāzā"]}, {"pre": "Saule kāpj arvien", "post": ".", "ok": "augstāk", "bad": ["augstak", "auugstāk", "aūgstāk", "augtāk"]}, {"pre": "Taka ved caur priežu", "post": ".", "ok": "mežu", "bad": ["mezu", "meežu", "mēžu", "meu"]}, {"pre": "Krastā smiltis ir ļoti", "post": ".", "ok": "karstas", "bad": ["kaarstas", "kārstas", "kartas", "krastas"]}, {"pre": "Vēlāk mēs ejam", "post": ".", "ok": "mājās", "bad": ["majas", "māājās", "māās", "mjāās"]}, {"pre": "Vecmāmiņa stāsta senas", "post": ".", "ok": "pasakas", "bad": ["paasakas", "pāsakas", "paskas", "psaakas"]}, {"pre": "Debesīs parādās pirmās", "post": ".", "ok": "zvaigznes", "bad": ["zvvaigznes", "zvāigznes", "zvaiznes", "zavigznes"]}]}, "Tautas pasakas": {"viegls": [{"pre": "Reiz mežmalā dzīvoja", "post": ".", "ok": "lapsa", "bad": ["laapsa", "lāpsa"]}, {"pre": "Viņa bija ļoti", "post": ".", "ok": "gudra", "bad": ["guudra", "gūdra"]}, {"pre": "Kādu rītu lapsa ieraudzīja", "post": ".", "ok": "gaili", "bad": ["gaaili", "gāili"]}, {"pre": "Gailis sēdēja augstu", "post": ".", "ok": "kokā", "bad": ["koka", "kookā"]}, {"pre": "Lapsa gribēja viņu", "post": ".", "ok": "noķert", "bad": ["nokert", "nooķert"]}, {"pre": "Viņa runāja saldā", "post": ".", "ok": "balsī", "bad": ["balsi", "baalsī"]}, {"pre": "Gailis klausījās un", "post": ".", "ok": "smējās", "bad": ["smejas", "smmējās"]}, {"pre": "Viņš zināja lapsas", "post": ".", "ok": "viltību", "bad": ["viltibu", "viiltību"]}, {"pre": "Lapsa gaidīja", "post": ".", "ok": "ilgi", "bad": ["illgi", "ili"]}, {"pre": "Beigās viņa aizgāja", "post": ".", "ok": "tukšā", "bad": ["tuksa", "tuukšā"]}], "vidējs": [{"pre": "Reiz mežā dzīvoja mazs", "post": ".", "ok": "zaķis", "bad": ["zakis", "zaaķis", "zāķis"]}, {"pre": "Viņš bija pelēks un", "post": ".", "ok": "ātrs", "bad": ["atrs", "āttrs", "āts"]}, {"pre": "Katru rītu viņš ēda", "post": ".", "ok": "zāli", "bad": ["zali", "zāāli", "zāi"]}, {"pre": "Kādu dienu viņu ieraudzīja", "post": ".", "ok": "vilks", "bad": ["viilks", "vīlks", "viks"]}, {"pre": "Zaķis aizskrēja pa", "post": ".", "ok": "taciņu", "bad": ["tacinu", "taaciņu", "tāciņu"]}, {"pre": "Viņš paslēpās aiz", "post": ".", "ok": "celma", "bad": ["ceelma", "cēlma", "cema"]}, {"pre": "Zaķis sēdēja pavisam", "post": ".", "ok": "kluss", "bad": ["klluss", "klūss", "klss"]}, {"pre": "Beigās vilks", "post": ".", "ok": "aizgāja", "bad": ["aizgaja", "aiizgāja", "aīzgāja"]}, {"pre": "Viņš steidzās pie", "post": ".", "ok": "mammas", "bad": ["maammas", "māmmas", "mamas"]}, {"pre": "Mamma teica gudrus", "post": ".", "ok": "vārdus", "bad": ["vardus", "vāārdus", "vārus"]}], "grūts": [{"pre": "Reiz kādā tālā valstī dzīvoja", "post": ".", "ok": "ķēniņš", "bad": ["kenins", "ķēēniņš", "ķēnīņš", "ķēnņš"]}, {"pre": "Ķēniņš jau bija", "post": ".", "ok": "vecs", "bad": ["veecs", "vēcs", "ves", "vces"]}, {"pre": "Jaunākais dēls bija", "post": ".", "ok": "čakls", "bad": ["cakls", "čaakls", "čākls", "čals"]}, {"pre": "Kādu dienu ķēniņš pasauca", "post": ".", "ok": "dēlus", "bad": ["delus", "dēēlus", "dēus", "dlēus"]}, {"pre": "Katram bija jāveic viens", "post": ".", "ok": "uzdevums", "bad": ["uzzdevums", "uzdēvums", "uzdeums", "udzevums"]}, {"pre": "Viņš ātri", "post": ".", "ok": "padevās", "bad": ["padevas", "paadevās", "pādevās", "padvās"]}, {"pre": "Jaunākais dēls gāja", "post": ".", "ok": "lēni", "bad": ["leni", "lēēni", "lēi", "lnēi"]}, {"pre": "Ceļā viņš satika vecu", "post": ".", "ok": "sievu", "bad": ["siievu", "sīevu", "sivu", "seivu"]}, {"pre": "Ar to viņš atrisināja", "post": ".", "ok": "uzdevumu", "bad": ["uzzdevumu", "uzdēvumu", "uzdeumu", "udzevumu"]}, {"pre": "Jaunākais dēls kļuva par", "post": ".", "ok": "ķēniņu", "bad": ["keninu", "ķēēniņu", "ķēnīņu", "ķēnņu"]}]}};
 
 const $ = id=>document.getElementById(id);
 const TASKS_PER_ROUND = 10;
+const PASS_SCORE = 70;
 
+let theme = "Rudens";
+const progress = {};
+Object.keys(TASKS).forEach(t=>progress[t] = {"viegls":false,"vidējs":false,"grūts":false});
 let level = "viegls", order = [], step = 0, score = 0, penalty = 0,
     curSpeed = 0, fastStreak = 0, stageIdx = 0, spawnT = 0, paused = false,
     decos = [], decoTimer = null,
@@ -176,13 +159,32 @@ let level = "viegls", order = [], step = 0, score = 0, penalty = 0,
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
 function fmt(s){ return Math.floor(s/60) + ":" + String(s%60).padStart(2,"0"); }
 
+function unlocked(lv){
+  const p = progress[theme];
+  return lv === "viegls" ? true : lv === "vidējs" ? p["viegls"] : p["vidējs"];
+}
+function nextLevel(lv){ return lv === "viegls" ? "vidējs" : lv === "vidējs" ? "grūts" : null; }
+
 function buildLevels(){
+  $("themes").innerHTML = "";
+  Object.keys(TASKS).forEach(t=>{
+    const b = document.createElement("button");
+    const p = progress[t];
+    b.className = "pill th" + (t===theme ? " on" : "");
+    b.textContent = t + (p["viegls"] && p["vidējs"] && p["grūts"] ? " ✓" : "");
+    b.onclick = ()=>{ theme = t; level = "viegls"; stopAll(); buildLevels(); showStart(); };
+    $("themes").appendChild(b);
+  });
   $("levels").innerHTML = "";
   [["viegls","Viegls"],["vidējs","Vidējs"],["grūts","Grūts"]].forEach(l=>{
     const b = document.createElement("button");
-    b.className = "pill" + (l[0]===level?" on":"");
-    b.textContent = l[1];
-    b.onclick = ()=>{ level = l[0]; stopAll(); buildLevels(); showStart(); };
+    const open = unlocked(l[0]), done = progress[theme][l[0]];
+    b.className = "pill" + (done ? " done" : "") + (!open ? " lock" : "") + (l[0]===level ? " on" : "");
+    b.textContent = (open ? "" : "🔒 ") + l[1] + (done ? " ✓" : "");
+    b.onclick = ()=>{
+      if(!open){ $("msg").textContent = "Vispirms izpildi iepriekšējo līmeni."; $("msg").className = "msg bad"; return; }
+      level = l[0]; stopAll(); buildLevels(); showStart();
+    };
     $("levels").appendChild(b);
   });
   $("lvlInfo").textContent = LEVELS[level].info;
@@ -216,6 +218,7 @@ function showStart(){
     "Pēc atskaites no augšas kritīs vārdi — uzklikšķini uz tā, kurš teikumā der!<br>" +
     "Katra kļūda pieskaita <b>5 soda sekundes</b>.";
   $("startBtn").textContent = "Sākt spēli";
+  $("nextLvlBtn").classList.add("hidden");
   $("over").classList.remove("hidden");
 }
 
@@ -255,7 +258,7 @@ function clearDecos(){ decos.forEach(d=>d.el.remove()); decos = []; }
 
 function startGame(){
   stopAll();
-  order = shuffle(LEVELS[level].tasks);
+  order = shuffle(TASKS[theme][level]);
   step = 0; score = 0; penalty = 0;
   curSpeed = LEVELS[level].speed; fastStreak = 0; stageIdx = 0;
   $("over").classList.add("hidden");
@@ -395,14 +398,23 @@ function finish(){
   const total = Math.floor((Date.now()-t0)/1000) + penalty;
   stopAll();
   $("sTime").textContent = fmt(total);
-  let note = "Labs darbs! Pamēģini vēlreiz un mēģini būt ātrāks.";
-  if(score >= 80) note = "Ļoti labi! Gandrīz visi vārdi noķerti.";
-  if(score === 100) note = "Izcili! Visi vārdi noķerti pareizi.";
-  $("overTitle").textContent = "Spēle beigusies";
+  const passed = score >= PASS_SCORE;
+  const nx = nextLevel(level);
+  let note;
+  if(passed){
+    progress[theme][level] = true;
+    buildLevels();
+    note = nx ? "Līmenis izpildīts! Vari doties uz nākamo līmeni."
+              : "Visi trīs līmeņi šajā tēmā izpildīti — izvēlies citu tēmu!";
+  } else {
+    note = "Lai atvērtu nākamo līmeni, jānoķer vismaz 7 vārdi no 10. Mēģini vēlreiz!";
+  }
+  $("overTitle").textContent = passed ? "Lieliski!" : "Spēle beigusies";
   $("overText").innerHTML = "Tavs laiks: <b>" + fmt(total) + "</b><br>" +
-    "Punkti: <b>" + score + "</b> no 100<br>" +
+    "Pareizi noķerti: <b>" + (score/10) + "</b> no 10<br>" +
     "Soda laiks: <b>" + penalty + " s</b><br>" + note;
   $("startBtn").textContent = "Spēlēt vēlreiz";
+  $("nextLvlBtn").classList.toggle("hidden", !(passed && nx));
   $("over").classList.remove("hidden");
 }
 
@@ -431,6 +443,10 @@ function updatePauseBtn(){
 
 $("pauseBtn").onclick = ()=>{ if(running) setPaused(!paused); };
 $("startBtn").onclick = startGame;
+$("nextLvlBtn").onclick = ()=>{
+  const nx = nextLevel(level);
+  if(nx && unlocked(nx)){ level = nx; stopAll(); buildLevels(); showStart(); }
+};
 buildLevels();
 showStart();
 fit();
