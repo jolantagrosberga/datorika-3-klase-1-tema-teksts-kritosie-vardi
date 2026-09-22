@@ -160,6 +160,7 @@ function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.rando
 function fmt(s){ return Math.floor(s/60) + ":" + String(s%60).padStart(2,"0"); }
 
 function unlocked(lv){
+  if(typeof teacher !== "undefined" && teacher) return true;
   const p = progress[theme];
   return lv === "viegls" ? true : lv === "vidējs" ? p["viegls"] : p["vidējs"];
 }
@@ -450,6 +451,24 @@ $("nextLvlBtn").onclick = ()=>{
 buildLevels();
 showStart();
 fit();
+
+/* ---- Skolotāja režīms: Ctrl + Shift + L atbloķē visus līmeņus (atkārtoti — atkal bloķē) ---- */
+var teacher = false;
+(function(){
+  const badge = document.createElement("div");
+  badge.textContent = "Skolotāja režīms";
+  badge.style.cssText = "position:fixed;left:8px;bottom:6px;font:12px Candara,Aptos,sans-serif;" +
+    "color:#fff;background:rgba(31,78,121,.75);padding:3px 9px;border-radius:999px;z-index:9999;display:none";
+  document.body.appendChild(badge);
+  document.addEventListener("keydown", e=>{
+    if(e.ctrlKey && e.shiftKey && (e.code === "KeyL" || e.key.toLowerCase() === "l")){
+      e.preventDefault(); e.stopImmediatePropagation();
+      teacher = !teacher;
+      badge.style.display = teacher ? "block" : "none";
+      if(typeof buildLevels === "function") buildLevels();
+    }
+  }, true);
+})();
 </script>
 </body>
 </html>
