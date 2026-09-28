@@ -452,7 +452,7 @@ buildLevels();
 showStart();
 fit();
 
-/* ---- Skolotāja režīms: Ctrl + Shift + L atbloķē visus līmeņus (atkārtoti — atkal bloķē) ---- */
+/* ---- Skolotāja režīms: Ctrl + Shift + F9 (vai 3x Esc) atbloķē visus līmeņus ---- */
 var teacher = false;
 (function(){
   const badge = document.createElement("div");
@@ -460,13 +460,27 @@ var teacher = false;
   badge.style.cssText = "position:fixed;left:8px;bottom:6px;font:12px Candara,Aptos,sans-serif;" +
     "color:#fff;background:rgba(31,78,121,.75);padding:3px 9px;border-radius:999px;z-index:9999;display:none";
   document.body.appendChild(badge);
+  function toggle(){
+    teacher = !teacher;
+    badge.style.display = teacher ? "block" : "none";
+    if(typeof buildLevels === "function") buildLevels();
+  }
+  let escCount = 0, escTimer = null;
   document.addEventListener("keydown", e=>{
-    if(e.ctrlKey && e.shiftKey && (e.code === "KeyL" || e.key.toLowerCase() === "l")){
+    // 1. Ctrl + Shift + F9
+    if(e.ctrlKey && e.shiftKey && e.code === "F9"){
       e.preventDefault(); e.stopImmediatePropagation();
-      teacher = !teacher;
-      badge.style.display = teacher ? "block" : "none";
-      if(typeof buildLevels === "function") buildLevels();
+      toggle(); return;
     }
+    // 2. Rezerves variants: trīs reizes Esc divu sekunžu laikā
+    if(e.key === "Escape"){
+      escCount++;
+      clearTimeout(escTimer);
+      escTimer = setTimeout(()=>{ escCount = 0; }, 2000);
+      if(escCount >= 3){ escCount = 0; e.preventDefault(); e.stopImmediatePropagation(); toggle(); }
+      return;
+    }
+    escCount = 0;
   }, true);
 })();
 </script>
